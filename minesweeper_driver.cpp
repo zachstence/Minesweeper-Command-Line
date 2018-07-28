@@ -2,4 +2,5 @@
 
 int main() {
   Minesweeper m;
+  m.play();
 }
