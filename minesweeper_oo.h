@@ -86,8 +86,8 @@ private:
 	const string TOP_RIGHT_BORDER_ = "┐";
 	const string BOTTOM_LEFT_BORDER_ = "└";
 	const string BOTTOM_RIGHT_BORDER_ = "┘";
-	const string HORIZONTAL_BORDER_ = "─";
-	const string VERTICAL_BORDER_ = "│";
+	const string HORIZ_BORDER_ = "─";
+	const string VERT_BORDER_ = "│";
 	const string ERR_INVALID_COMMAND_ = "That is not a valid command.";
 	const string ERR_OUT_OF_BOUNDS_ = "Please enter a row and column within the "
 	                                  "board dimensions.";
