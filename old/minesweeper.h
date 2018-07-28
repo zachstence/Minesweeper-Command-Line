@@ -27,11 +27,11 @@ const bool SECRET = false;
 const bool LABEL = true;
 
 const string MENU = "----- WELCOME TO COMMAND LINE MINESWEEPER -----\n"
-    "Please choose a difficulty level [Rows x Cols, # bombs]:\n"
-    " (b)eginner      [9x9, 10]\n"
-    " (i)ntermediate  [16x16, 40]\n"
-    " (a)dvanced      [16x30, 99]\n"
-    " (c)ustom\n";
+                    "Please choose a difficulty level [Rows x Cols, # bombs]:\n"
+                    " (b)eginner      [9x9, 10]\n"
+                    " (i)ntermediate  [16x16, 40]\n"
+                    " (a)dvanced      [16x30, 99]\n"
+                    " (c)ustom\n";
 
 const int MIN_ROWS = 1;
 const int MAX_ROWS = 100;
@@ -354,25 +354,25 @@ bool runCommand(vector<vector<Cell>> &board, bool &play, bool &bombRevealed) {
   }
 
   switch (cmd) {
-    case 'h':
-      displayHelp();
-      return false;
-    case 'q':
-      cout << "Game quit" << endl;
-      play = false;
-      return true;
-    case 'r':
-      bombRevealed = reveal(board, row, col);
-      return true;
-    case 'x':
-      markBomb(board, row, col);
-      return true;
-    case '?':
-      markQuestionMark(board, row, col);
-      return true;
-    default:
-      cout << ERR_INVALID_COMMAND << endl;
-      return false;
+  case 'h':
+    displayHelp();
+    return false;
+  case 'q':
+    cout << "Game quit" << endl;
+    play = false;
+    return true;
+  case 'r':
+    bombRevealed = reveal(board, row, col);
+    return true;
+  case 'x':
+    markBomb(board, row, col);
+    return true;
+  case '?':
+    markQuestionMark(board, row, col);
+    return true;
+  default:
+    cout << ERR_INVALID_COMMAND << endl;
+    return false;
   }
 }
 
@@ -410,57 +410,57 @@ vector<vector<Cell>> setup() {
     istringstream iss(line);
     iss >> choice;
     switch (choice) {
-      case 'b':
-        cout << "Starting game with beginner difficulty" << endl;
-        s = {9, 9, 10};
-        success = true;
-        break;
-      case 'i':
-        cout << "Starting game with intermediate difficulty" << endl;
-        s = {16, 16, 40};
-        success = true;
-        break;
-      case 'a':
-        cout << "Starting game with advanced difficulty" << endl;
-        s = {16, 30, 99};
-        success = true;
-        break;
-      case 'c': {
-        int rows, cols, bombs;
-        bool rowsValid = false;
-        bool colsValid = false;
-        bool bombsValid = false;
+    case 'b':
+      cout << "Starting game with beginner difficulty" << endl;
+      s = {9, 9, 10};
+      success = true;
+      break;
+    case 'i':
+      cout << "Starting game with intermediate difficulty" << endl;
+      s = {16, 16, 40};
+      success = true;
+      break;
+    case 'a':
+      cout << "Starting game with advanced difficulty" << endl;
+      s = {16, 30, 99};
+      success = true;
+      break;
+    case 'c': {
+      int rows, cols, bombs;
+      bool rowsValid = false;
+      bool colsValid = false;
+      bool bombsValid = false;
 
-        do {
-          cout << "Enter [rows cols bombs]: ";
-          getline(cin, line);
-          istringstream iss2(line);
-          iss2 >> rows >> cols >> bombs;
+      do {
+        cout << "Enter [rows cols bombs]: ";
+        getline(cin, line);
+        istringstream iss2(line);
+        iss2 >> rows >> cols >> bombs;
 
-          if (rows < MIN_ROWS) cout << ERR_ROWS_MIN << endl;
-          else if (rows > MAX_ROWS) cout << ERR_ROWS_MAX << endl;
-          else rowsValid = true;
+        if (rows < MIN_ROWS) cout << ERR_ROWS_MIN << endl;
+        else if (rows > MAX_ROWS) cout << ERR_ROWS_MAX << endl;
+        else rowsValid = true;
 
-          if (cols < MIN_COLS) cout << ERR_COLS_MIN << endl;
-          else if (cols > MAX_COLS) cout << ERR_COLS_MAX << endl;
-          else colsValid = true;
+        if (cols < MIN_COLS) cout << ERR_COLS_MIN << endl;
+        else if (cols > MAX_COLS) cout << ERR_COLS_MAX << endl;
+        else colsValid = true;
 
-          if (bombs < MIN_BOMBS) cout << ERR_BOMBS_MIN << endl;
-          else if (bombs > rows * cols) cout << ERR_BOMBS_MAX << endl;
-          else bombsValid = true;
+        if (bombs < MIN_BOMBS) cout << ERR_BOMBS_MIN << endl;
+        else if (bombs > rows * cols) cout << ERR_BOMBS_MAX << endl;
+        else bombsValid = true;
 
-          cout << endl;
+        cout << endl;
 
-        } while (!(rowsValid && colsValid && bombsValid));
+      } while (!(rowsValid && colsValid && bombsValid));
 
-        cout << "Starting game with custom difficulty (" << rows << " rows, " << cols << " cols, " << bombs << " bombs)";
-        s = {rows, cols, bombs};
-        success = true;
-        break;
-      }
-      default:
-        cout << "Not a valid choice, choose again: ";
-        success = false;
+      cout << "Starting game with custom difficulty (" << rows << " rows, " << cols << " cols, " << bombs << " bombs)";
+      s = {rows, cols, bombs};
+      success = true;
+      break;
+    }
+    default:
+      cout << "Not a valid choice, choose again: ";
+      success = false;
     }
   } while (!success);
 
