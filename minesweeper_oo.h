@@ -61,8 +61,7 @@ private:
 	void expand(int, int);
 	void checkWin();
 	void updateDisplay();
-	string borderChar(int, int);
-	void displayBoard(bool, bool);
+	void displayBoard(bool, int);
 
 	// const variables inherent to how the game plays
 	const int MIN_ROWS_ = 1;
@@ -81,8 +80,7 @@ private:
 	const string HELP_ = "\nAvailable commands: "
 	                     "\n  r row col - reveals the cell at (row,col)"
 	                     "\n  x row col - marks the cell at (row,col) as a bomb"
-	                     "\n  ? row col - marks the cell at (row,col) as a "
-	                     "question mark"
+	                     "\n  ? row col - marks the cell at (row,col) as a question mark"
 	                     "\n  [h]elp    - display the command list"
 	                     "\n  [q]uit    - end the game and close the program\n";
 	const string QUIT_MSG_ = "Game quit.";
@@ -93,26 +91,16 @@ private:
 	const string HORIZ_BORDER_ = "─";
 	const string VERT_BORDER_ = "│";
 	const string ERR_INVALID_COMMAND_ = "That is not a valid command.";
-	const string ERR_OUT_OF_BOUNDS_ = "Please enter a row and column within the "
-	                                  "board dimensions.";
-	const string ERR_REVEAL_ = "That cell has already been revealed, you cannot "
-	                           "reveal it again.";
-	const string ERR_BOMB_ = "That cell has already been revealed, you cannot "
-	                         "mark it as a bomb.";
-	const string ERR_QMARK_ = "That cell has already been revealed, you cannot "
-	                          "mark it as a question mark.";
-	const string ERR_ROWS_MIN_ = "Number of rows must be greater than "
-	                             + to_string(MIN_ROWS_) + ".";
-	const string ERR_ROWS_MAX_ = "Number of rows must be less than "
-	                             + to_string(MAX_ROWS_) + ".";
-	const string ERR_COLS_MIN_ = "Number of columns must be greater than "
-	                             + to_string(MIN_COLS_) + ".";
-	const string ERR_COLS_MAX_ = "Number of columns must be less than "
-	                             + to_string(MAX_COLS_) + ".";
-	const string ERR_BOMBS_MIN_ = "Number of bombs must be greater than "
-	                              + to_string(MIN_BOMBS_) + ".";
-	const string ERR_BOMBS_MAX_ = "Number of bombs must be less than ROWS * "
-	                              "COLS.";
+	const string ERR_OUT_OF_BOUNDS_ = "Please enter a row and column within the board dimensions.";
+	const string ERR_REVEAL_ = "That cell has already been revealed, you cannot reveal it again.";
+	const string ERR_BOMB_ = "That cell has already been revealed, you cannot mark it as a bomb.";
+	const string ERR_QMARK_ = "That cell has already been revealed, you cannot mark it as a question mark.";
+	const string ERR_ROWS_MIN_ = "Number of rows must be greater than " + to_string(MIN_ROWS_) + ".";
+	const string ERR_ROWS_MAX_ = "Number of rows must be less than " + to_string(MAX_ROWS_) + ".";
+	const string ERR_COLS_MIN_ = "Number of columns must be greater than " + to_string(MIN_COLS_) + ".";
+	const string ERR_COLS_MAX_ = "Number of columns must be less than " + to_string(MAX_COLS_) + ".";
+	const string ERR_BOMBS_MIN_ = "Number of bombs must be greater than " + to_string(MIN_BOMBS_) + ".";
+	const string ERR_BOMBS_MAX_ = "Number of bombs must be less than ROWS * COLS.";
 	const string GAME_OVER_ = "You revealed a bomb, game over!";
 	const string GAME_WON_ = "Congratulations, you won!";
 };

@@ -78,7 +78,7 @@ Board Minesweeper::getBoard() {
   Displays the current game board with labels on and secret off
 */
 void Minesweeper::displayBoard() {
-  displayBoard(true, false);
+  displayBoard(true, 0);
 }
 
 
@@ -99,21 +99,25 @@ void Minesweeper::setup() {
     istringstream iss(line);
     iss >> choice;
     switch (choice) {
+    case 'B':
     case 'b':
       cout << "Starting game with beginner difficulty" << endl;
       s_ = {9, 9, 10};
       success = true;
       break;
+    case 'I':
     case 'i':
       cout << "Starting game with intermediate difficulty" << endl;
       s_ = {16, 16, 40};
       success = true;
       break;
+    case 'A':
     case 'a':
       cout << "Starting game with advanced difficulty" << endl;
       s_ = {16, 30, 99};
       success = true;
       break;
+    case 'C':
     case 'c': {
       int rows, cols, bombs;
       bool rowsValid = false;
@@ -173,7 +177,7 @@ void Minesweeper::loop() {
   } while (!quit_ && !win_ && !lose_);
 
   // Display board one more time
-  displayBoard(true, true);
+  displayBoard(true, 1);
 
   // Output game over or game won message
   if (win_) cout << GAME_WON_ << endl;
@@ -241,19 +245,21 @@ void Minesweeper::runCommand() {
     iss >> cmd >> row >> col;
 
     // if command is valid
-    if (cmd == 'h') cout << HELP_;
-    else if (cmd == 'q') {
+    if (cmd == 'h' || cmd == 'H') cout << HELP_;
+    else if (cmd == 'q' || cmd == 'Q') {
       quit_ = true;
       return;
     }
-    else if (cmd == 'r' || cmd == 'x' || cmd == '?') {
+    else if (cmd == 'r' || cmd == 'R' || cmd == 'x' || cmd == 'X' || cmd == '?') {
       if (row < 1 || col < 1 || row > s_.rows || col > s_.cols)
         cout << ERR_OUT_OF_BOUNDS_ << endl;
       else {
         switch (cmd) {
+        case 'R':
         case 'r':
           reveal(row - 1, col - 1);
           return;
+        case 'X':
         case 'x':
           markBomb(row - 1, col - 1);
           return;
@@ -309,8 +315,8 @@ void Minesweeper::checkWin() {
     they have been revealed
 */
 void Minesweeper::updateDisplay() {
-  for (int r = 0; r < board_.size(); r++) {
-    for (int c = 0; c < board_[0].size(); c++) {
+  for (int r = 0; r < s_.rows; r++) {
+    for (int c = 0; c < s_.cols; c++) {
 
       if (board_[r][c].isRevealed) {
         if (board_[r][c].isBomb) {
@@ -333,11 +339,19 @@ void Minesweeper::updateDisplay() {
   @param label whether or not to show row/column labels and borders on display
   @param secret whether or not to show secret information (bomb locations)
 */
-void Minesweeper::displayBoard(bool label, bool secret) {
+void Minesweeper::displayBoard(bool label, int secret) {
   cout << endl;
   for (int r = 0; r < s_.rows; r++) {
     if (label && r == 0) {
       // column numbers
+      if (s_.cols >= 10) {
+        cout << "     ";
+        for (int c = 0; c < s_.cols; c++) {
+          if ((c + 1) % 10 == 0) cout << (c + 1) / 10 << " ";
+          else cout << "  ";
+        }
+      }
+      cout << endl;
       cout << "     ";
       for (int c = 0; c < s_.cols; c++) {
         cout << (c + 1) % 10 << " ";
@@ -362,8 +376,8 @@ void Minesweeper::displayBoard(bool label, bool secret) {
 
     // cells
     for (int c = 0; c < s_.cols; c++) {
-      if (secret && board_[r][c].isBomb) cout << "X ";
-      // else if (secret) cout << board_[r][c].bombsBordering << " ";
+      if ((secret == 1 || secret == 3) && board_[r][c].isBomb) cout << "X ";
+      else if (secret == 2) cout << board_[r][c].bombsBordering << " ";
       else cout << board_[r][c].display << " ";
     }
 
