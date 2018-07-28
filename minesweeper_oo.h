@@ -12,6 +12,7 @@ using std::endl;
 using std::setw;
 using std::string;
 using std::to_string;
+using std::find;
 using std::vector;
 
 struct Cell {
@@ -45,16 +46,18 @@ private:
 	Board board_;
 	Settings s_;
 
-	// true if the game is continuing, false if its over
-	bool play_;
+	// true if the player quit, false otherwise
+	bool quit_;
 	// true if the player has won, false otherwise
 	bool win_;
+	// true if the player has lost, false otherwise
+	bool lose_;
 
 	void setup();
 	void loop();
 	void randomBombs();
 	void calculateBombsBordering();
-	bool runCommand();
+	void runCommand();
 	void expand(int, int);
 	void checkWin();
 	void updateDisplay();
@@ -81,7 +84,8 @@ private:
 	                     "\n  ? row col - marks the cell at (row,col) as a "
 	                     "question mark"
 	                     "\n  [h]elp    - display the command list"
-	                     "\n  [q]uit    - end the game and close the program";
+	                     "\n  [q]uit    - end the game and close the program\n";
+	const string QUIT_MSG_ = "Game quit.";
 	const string TOP_LEFT_BORDER_ = "┌";
 	const string TOP_RIGHT_BORDER_ = "┐";
 	const string BOTTOM_LEFT_BORDER_ = "└";

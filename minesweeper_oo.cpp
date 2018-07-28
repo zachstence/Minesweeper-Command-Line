@@ -8,8 +8,9 @@
 */
 void Minesweeper::play() {
   setup();
-  play_ = true;
+  quit_ = false;
   win_ = false;
+  lose_ = false;
   loop();
 }
 
@@ -18,8 +19,8 @@ void Minesweeper::play() {
 /// PROTECTED
 ////////////////////////////////////////////////////////////////////////////////
 /**
-  Reveals a cell in the game board. Updates win_ and play_ to stop the game if
-    the player reveals a bomb
+  Reveals a cell in the game board. Updates lose_ to stop the game if the
+    player reveals a bomb
 
   @param r the row number to reveal
   @param c the column number to reveal
@@ -30,8 +31,7 @@ void Minesweeper::reveal(int r, int c) {
   else {
     board_[r][c].isRevealed = true;
     if (board_[r][c].isBomb) {
-      win_ = false;
-      play_ = false;
+      lose_ = true;
     }
     else if (board_[r][c].bombsBordering == 0)
       expand(r, c);
@@ -140,7 +140,7 @@ void Minesweeper::setup() {
       } while (!(rowsValid && colsValid && bombsValid));
 
       cout << "Starting game with custom difficulty (" << rows << " rows, "
-           << cols << " cols, " << bombs << " bombs)";
+           << cols << " cols, " << bombs << " bombs)" << endl;
       s_ = {rows, cols, bombs};
       success = true;
       break;
@@ -164,30 +164,21 @@ void Minesweeper::setup() {
   The game loop. Prompts user to enter commands and checks for win condition.
 */
 void Minesweeper::loop() {
-  bool valid_command = false;
-
   // Main game loop - while a bomb isn't revealed and user doesn't quit
   do {
     displayBoard();
-
-    // Input loop - while input is invalid
-    do {
-      valid_command = runCommand();
-    } while (!valid_command);
-
-    // Update the cell display values
+    runCommand();
     updateDisplay();
     checkWin();
-  } while (play_);
+  } while (!quit_ && !win_ && !lose_);
 
   // Display board one more time
   displayBoard(true, true);
 
   // Output game over or game won message
-  if (win_)
-    cout << GAME_WON_ << endl;
-  else
-    cout << GAME_OVER_ << endl;
+  if (win_) cout << GAME_WON_ << endl;
+  else if (lose_) cout << GAME_OVER_ << endl;
+  else if (quit_) cout << QUIT_MSG_ << endl;
 }
 
 /**
@@ -235,47 +226,45 @@ void Minesweeper::calculateBombsBordering() {
 
 /**
   Prompts the user to enter a command and processes their response
-
-  @return true if a command was successfully run, false otherwise
 */
-bool Minesweeper::runCommand() {
+void Minesweeper::runCommand() {
   char cmd;
   int row = -1, col = -1;
 
-  cout << "Enter a command: ";
-  string line;
-  getline(cin, line);
-  istringstream iss(line);
-  iss >> cmd >> row >> col;
+  // all this input validation feels really awkward, can't think of a cleaner
+  // way to do it
+  do {
+    cout << "Enter a command: ";
+    string line;
+    getline(cin, line);
+    istringstream iss(line);
+    iss >> cmd >> row >> col;
 
-  if (!(cmd == 'h' || cmd == 'q')) {
-    if (row < 1 || col < 1 || row > s_.rows || col > s_.cols) {
-      cout << ERR_OUT_OF_BOUNDS_ << endl;
-      return false;
+    // if command is valid
+    if (cmd == 'h') cout << HELP_;
+    else if (cmd == 'q') {
+      quit_ = true;
+      return;
     }
-  }
-
-  switch (cmd) {
-  case 'h':
-    cout << HELP_;
-    return false;
-  case 'q':
-    cout << "Game quit" << endl;
-    play_ = false;
-    return true;
-  case 'r':
-    reveal(row - 1, col - 1);
-    return true;
-  case 'x':
-    markBomb(row - 1, col - 1);
-    return true;
-  case '?':
-    markQuestionMark(row - 1, col - 1);
-    return true;
-  default:
-    cout << ERR_INVALID_COMMAND_ << endl;
-    return false;
-  }
+    else if (cmd == 'r' || cmd == 'x' || cmd == '?') {
+      if (row < 1 || col < 1 || row > s_.rows || col > s_.cols)
+        cout << ERR_OUT_OF_BOUNDS_ << endl;
+      else {
+        switch (cmd) {
+        case 'r':
+          reveal(row - 1, col - 1);
+          return;
+        case 'x':
+          markBomb(row - 1, col - 1);
+          return;
+        case '?':
+          markQuestionMark(row - 1, col - 1);
+          return;
+        }
+      }
+    }
+    else cout << ERR_INVALID_COMMAND_ << endl;
+  } while (true);
 }
 
 /**
@@ -285,7 +274,6 @@ bool Minesweeper::runCommand() {
   @param c the column of the cell to expand at
 */
 void Minesweeper::expand(int r, int c) {
-  printf("expand(%d, %d)\n", r + 1, c + 1);
   for (int rOffset = -1; rOffset <= 1; rOffset++) {
     for (int cOffset = -1; cOffset <= 1; cOffset++) {
       if (rOffset == 0 && cOffset == 0) continue;
@@ -295,7 +283,6 @@ void Minesweeper::expand(int r, int c) {
         continue;
       else if (!board_[newR][newC].isRevealed && !board_[newR][newC].isBomb) {
         board_[newR][newC].isRevealed = true;
-        printf("  (%d, %d) revealed\n", newR + 1, newC + 1);
         if (board_[newR][newC].bombsBordering == 0) expand(newR, newC);
       }
     }
@@ -303,11 +290,11 @@ void Minesweeper::expand(int r, int c) {
 }
 
 /**
-  Check if the player has won. Update win_ and play_.
+  Check if the player has won. Update win_.
 */
 void Minesweeper::checkWin() {
-  for (int r = 1; r < board_.size() - 1; r++) {
-    for (int c = 1; c < board_[0].size() - 1; c++) {
+  for (int r = 0; r < s_.rows; r++) {
+    for (int c = 0; c < s_.cols; c++) {
       if (!board_[r][c].isBomb && !board_[r][c].isRevealed) {
         win_ = false;
         return;
@@ -315,7 +302,6 @@ void Minesweeper::checkWin() {
     }
   }
   win_ = true;
-  play_ = false;
 }
 
 /**
