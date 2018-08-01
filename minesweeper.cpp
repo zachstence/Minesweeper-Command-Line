@@ -1,4 +1,4 @@
-#include "minesweeper_oo.h"
+#include "minesweeper.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// PUBLIC
@@ -11,7 +11,6 @@ void Minesweeper::play() {
   quit_ = false;
   win_ = false;
   lose_ = false;
-  updateDisplay();
   loop();
 }
 
@@ -47,10 +46,7 @@ void Minesweeper::reveal(int r, int c) {
 void Minesweeper::markBomb(int r, int c) {
   if (board_[r][c].isRevealed)
     cout << ERR_BOMB_ << endl;
-  else {
-    board_[r][c].display = 'X';
-    board_[r][c].markedBomb = true;
-  }
+  else board_[r][c].markedBomb = true;
 }
 
 /**
@@ -62,10 +58,7 @@ void Minesweeper::markBomb(int r, int c) {
 void Minesweeper::markUnsure(int r, int c) {
   if (board_[r][c].isRevealed)
     cout << ERR_QMARK_ << endl;
-  else {
-    board_[r][c].display = unsureDisplay_;
-    board_[r][c].markedUnsure = true;
-  }
+  else board_[r][c].markedUnsure = true;
 }
 
 /**
@@ -75,15 +68,15 @@ void Minesweeper::markUnsure(int r, int c) {
   @return the display values of the current game board
 */
 vector<vector<char>> Minesweeper::getBoard() {
-  vector<vector<char>> boardDisplay;
-  for (auto &row : board_) {
-    vector<char> rowDisplay;
-    for (auto &cell : row) {
-      rowDisplay.push_back(cell.display);
+  vector<vector<char>> boardChars;
+  for (int r = 0; r < s_.rows; r++) {
+    vector<char> rowChars;
+    for (int c = 0; c < s_.cols; c++) {
+      rowChars.push_back(cellChar(board_[r][c], 0));
     }
-    boardDisplay.push_back(rowDisplay);
+    boardChars.push_back(rowChars);
   }
-  return boardDisplay;
+  return boardChars;
 }
 
 /**
@@ -110,12 +103,20 @@ char Minesweeper::getBombdisplay() {
   return bombDisplay_;
 }
 
-void Minesweeper::setUnsureDisplay(char c) {
-  unsureDisplay_ = c;
+void Minesweeper::setMarkUnsureDisplay(char c) {
+  markUnsureDisplay_ = c;
 }
 
-char Minesweeper::getUnsureDisplay() {
-  return unsureDisplay_;
+char Minesweeper::getMarkUnsureDisplay() {
+  return markUnsureDisplay_;
+}
+
+void Minesweeper::setRevealedDisplay(char c) {
+  revealedDisplay_ = c;
+}
+
+char Minesweeper::getRevealedDisplay() {
+  return revealedDisplay_;
 }
 
 
@@ -209,7 +210,6 @@ void Minesweeper::loop() {
   do {
     displayBoard();
     runCommand();
-    updateDisplay();
     checkWin();
   } while (!quit_ && !win_ && !lose_);
 
@@ -268,8 +268,8 @@ void Minesweeper::calculateBombsBordering() {
 void Minesweeper::displayHelp() {
   cout << "\nAvailable commands: "
        "\n  r row col - reveals the cell at (row,col)"
-       "\n  " << bombDisplay_ << " row col - marks the cell at (row,col) as a bomb"
-       "\n  " << unsureDisplay_ << " row col - marks the cell at (row,col) as a question mark"
+       "\n  " << markBombDisplay_ << " row col - marks the cell at (row,col) as a bomb"
+       "\n  " << markUnsureDisplay_ << " row col - marks the cell at (row,col) as a question mark"
        "\n  [h]elp    - display the command list"
        "\n  [q]uit    - end the game and close the program\n";
 }
@@ -299,18 +299,19 @@ void Minesweeper::runCommand() {
       quit_ = true;
       return;
     }
-    else if (cmd == 'r' || cmd == tolower(bombDisplay_) || cmd == tolower(unsureDisplay_)) {
+    else if (cmd == 'r' || cmd == tolower(markBombDisplay_)
+             || cmd == tolower(markUnsureDisplay_)) {
       if (row < 1 || col < 1 || row > s_.rows || col > s_.cols)
         cout << ERR_OUT_OF_BOUNDS_ << endl;
       else if (cmd == 'r') {
         reveal(row - 1, col - 1);
         return;
       }
-      else if (cmd == tolower(bombDisplay_)) {
+      else if (cmd == tolower(markBombDisplay_)) {
         markBomb(row - 1, col - 1);
         return;
       }
-      else if (cmd == tolower(unsureDisplay_)) {
+      else if (cmd == tolower(markUnsureDisplay_)) {
         markUnsure(row - 1, col - 1);
         return;
       }
@@ -357,31 +358,26 @@ void Minesweeper::checkWin() {
 }
 
 /**
-  Update the display characters in the board_ corresponding to whether or not
-    they have been revealed
+  Decides what character should be displayed based off of what each cell's
+    properties are
+
+  @param c
+  @param secret 0 = no secret, 1 = bomb locations, 2 = num bordering,
+    3 = bomb locations and num bordering
 */
-void Minesweeper::updateDisplay() {
-  for (int r = 0; r < s_.rows; r++) {
-    for (int c = 0; c < s_.cols; c++) {
-
-      if (board_[r][c].isRevealed) {
-        if (board_[r][c].isBomb) {
-
-          board_[r][c].display = bombDisplay_;
-          board_[r][c].bombsBordering = 0;
-        }
-        else if (board_[r][c].bombsBordering != 0)
-          board_[r][c].display = '0' + board_[r][c].bombsBordering;
-        else if (board_[r][c].bombsBordering == 0)
-          board_[r][c].display = ' ';
-      }
-      else if (board_[r][c].markedBomb) board_[r][c].display = bombDisplay_;
-      else if (board_[r][c].markedUnsure) board_[r][c].display = unsureDisplay_;
-      else board_[r][c].display = hiddenDisplay_;
-    }
+char Minesweeper::cellChar(Cell c,  int secret) {
+  if (!c.isRevealed && !c.markedBomb && !c.markedUnsure) {
+    if (secret == 0) return hiddenDisplay_;
+    else if ((secret == 1 || secret == 3) && c.isBomb) return bombDisplay_;
+    else if (secret == 2) return '0' + c.bombsBordering;
+    else return revealedDisplay_;
   }
+  else if (c.markedBomb) return markBombDisplay_;
+  else if (c.isBomb) return bombDisplay_;
+  else if (c.markedUnsure) return markUnsureDisplay_;
+  else if (c.bombsBordering != 0) return '0' + c.bombsBordering;
+  else if (c.bombsBordering == 0) return revealedDisplay_;
 }
-
 /**
   Displays the game board
 
@@ -392,6 +388,7 @@ void Minesweeper::displayBoard(bool label, int secret) {
   cout << endl;
   for (int r = 0; r < s_.rows; r++) {
     if (label && r == 0) {
+
       // column numbers
       if (s_.cols >= 10) {
         cout << "     ";
@@ -406,6 +403,7 @@ void Minesweeper::displayBoard(bool label, int secret) {
         cout << (c + 1) % 10 << " ";
       }
       cout << endl;
+      /////////////////
 
       // top border
       cout << "   ";
@@ -418,20 +416,21 @@ void Minesweeper::displayBoard(bool label, int secret) {
           cout << HORIZ_BORDER_ << HORIZ_BORDER_ << HORIZ_BORDER_
                << TOP_RIGHT_BORDER_ << endl;
       }
-
+      /////////////
     }
-    // row labels
+
+    // row label
     cout << setw(2) << (r + 1) % 100 << " " << VERT_BORDER_ << " ";
+    ////////////
 
     // cells
-    for (int c = 0; c < s_.cols; c++) {
-      if ((secret == 1 || secret == 3) && board_[r][c].isBomb) cout << "X ";
-      else if (secret == 2) cout << board_[r][c].bombsBordering << " ";
-      else cout << board_[r][c].display << " ";
-    }
+    for (int c = 0; c < s_.cols; c++)
+      cout << cellChar(board_[r][c], secret) << " ";
+    ////////
 
     cout << VERT_BORDER_;
 
+    // bottom border
     if (label && r == s_.rows - 1) {
       cout << endl << "   ";
       for (int c = 0; c < s_.cols; c++) {
@@ -444,6 +443,8 @@ void Minesweeper::displayBoard(bool label, int secret) {
                << BOTTOM_RIGHT_BORDER_;
       }
     }
+    ////////////////
+
     cout << endl;
   }
 }

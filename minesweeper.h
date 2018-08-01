@@ -17,7 +17,6 @@ using std::vector;
 
 struct Cell {
   bool isRevealed = false;
-  char display = '*';
   bool isBomb = false;
   bool markedBomb = false;
   bool markedUnsure = false;
@@ -38,10 +37,14 @@ public:
 
   void setHiddenDisplay(char);
   char getHiddenDisplay();
+  void setRevealedDisplay(char);
+  char getRevealedDisplay();
+  void setMarkBombDisplay(char);
+  char getMarkBombDisplay();
+  void setMarkUnsureDisplay(char);
+  char getMarkUnsureDisplay();
   void setBombDisplay(char);
   char getBombdisplay();
-  void setUnsureDisplay(char);
-  char getUnsureDisplay();
 
 // to be used for a minesweeper solver that will inherit from this class
 protected:
@@ -61,8 +64,10 @@ private:
   bool lose_;
 
   char hiddenDisplay_ = '*';
-  char bombDisplay_ = 'x';
-  char unsureDisplay_ = '?';
+  char revealedDisplay_ = ' ';
+  char markBombDisplay_ = '#';
+  char markUnsureDisplay_ = '?';
+  char bombDisplay_ = 'X';
 
   void loop();
   void randomBombs();
@@ -71,7 +76,7 @@ private:
   void runCommand();
   void expand(int, int);
   void checkWin();
-  void updateDisplay();
+  char cellChar(Cell, int);
   void displayBoard(bool, int);
 
   // const variables inherent to how the game plays
