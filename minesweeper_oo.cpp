@@ -11,6 +11,7 @@ void Minesweeper::play() {
   quit_ = false;
   win_ = false;
   lose_ = false;
+  updateDisplay();
   loop();
 }
 
@@ -47,7 +48,7 @@ void Minesweeper::markBomb(int r, int c) {
   if (board_[r][c].isRevealed)
     cout << ERR_BOMB_ << endl;
   else {
-    board_[r][c].display = "X";
+    board_[r][c].display = 'X';
     board_[r][c].markedBomb = true;
   }
 }
@@ -58,20 +59,31 @@ void Minesweeper::markBomb(int r, int c) {
   @param r the row number to mark
   @param c the column number to mark
 */
-void Minesweeper::markQuestionMark(int r, int c) {
+void Minesweeper::markUnsure(int r, int c) {
   if (board_[r][c].isRevealed)
     cout << ERR_QMARK_ << endl;
-  else
-    board_[r][c].display = "?";
+  else {
+    board_[r][c].display = unsureDisplay_;
+    board_[r][c].markedUnsure = true;
+  }
 }
 
 /**
-  Returns the current game board
+  Returns just the display values of the current game board, not the bomb
+    locations or other secret information
 
-  @return the current game board
+  @return the display values of the current game board
 */
-Board Minesweeper::getBoard() {
-  return board_;
+vector<vector<char>> Minesweeper::getBoard() {
+  vector<vector<char>> boardDisplay;
+  for (auto &row : board_) {
+    vector<char> rowDisplay;
+    for (auto &cell : row) {
+      rowDisplay.push_back(cell.display);
+    }
+    boardDisplay.push_back(rowDisplay);
+  }
+  return boardDisplay;
 }
 
 /**
@@ -79,6 +91,31 @@ Board Minesweeper::getBoard() {
 */
 void Minesweeper::displayBoard() {
   displayBoard(true, 0);
+}
+
+// getters and setters for board display characters
+void Minesweeper::setHiddenDisplay(char c) {
+  hiddenDisplay_ = c;
+}
+
+char Minesweeper::getHiddenDisplay() {
+  return hiddenDisplay_;
+}
+
+void Minesweeper::setBombDisplay(char c) {
+  bombDisplay_ = c;
+}
+
+char Minesweeper::getBombdisplay() {
+  return bombDisplay_;
+}
+
+void Minesweeper::setUnsureDisplay(char c) {
+  unsureDisplay_ = c;
+}
+
+char Minesweeper::getUnsureDisplay() {
+  return unsureDisplay_;
 }
 
 
@@ -228,6 +265,15 @@ void Minesweeper::calculateBombsBordering() {
   }
 }
 
+void Minesweeper::displayHelp() {
+  cout << "\nAvailable commands: "
+       "\n  r row col - reveals the cell at (row,col)"
+       "\n  " << bombDisplay_ << " row col - marks the cell at (row,col) as a bomb"
+       "\n  " << unsureDisplay_ << " row col - marks the cell at (row,col) as a question mark"
+       "\n  [h]elp    - display the command list"
+       "\n  [q]uit    - end the game and close the program\n";
+}
+
 /**
   Prompts the user to enter a command and processes their response
 */
@@ -244,29 +290,29 @@ void Minesweeper::runCommand() {
     istringstream iss(line);
     iss >> cmd >> row >> col;
 
+    // convert cmd to lowercase
+    cmd = tolower(cmd);
+
     // if command is valid
-    if (cmd == 'h' || cmd == 'H') cout << HELP_;
-    else if (cmd == 'q' || cmd == 'Q') {
+    if (cmd == 'h') displayHelp();
+    else if (cmd == 'q') {
       quit_ = true;
       return;
     }
-    else if (cmd == 'r' || cmd == 'R' || cmd == 'x' || cmd == 'X' || cmd == '?') {
+    else if (cmd == 'r' || cmd == tolower(bombDisplay_) || cmd == tolower(unsureDisplay_)) {
       if (row < 1 || col < 1 || row > s_.rows || col > s_.cols)
         cout << ERR_OUT_OF_BOUNDS_ << endl;
-      else {
-        switch (cmd) {
-        case 'R':
-        case 'r':
-          reveal(row - 1, col - 1);
-          return;
-        case 'X':
-        case 'x':
-          markBomb(row - 1, col - 1);
-          return;
-        case '?':
-          markQuestionMark(row - 1, col - 1);
-          return;
-        }
+      else if (cmd == 'r') {
+        reveal(row - 1, col - 1);
+        return;
+      }
+      else if (cmd == tolower(bombDisplay_)) {
+        markBomb(row - 1, col - 1);
+        return;
+      }
+      else if (cmd == tolower(unsureDisplay_)) {
+        markUnsure(row - 1, col - 1);
+        return;
       }
     }
     else cout << ERR_INVALID_COMMAND_ << endl;
@@ -321,14 +367,17 @@ void Minesweeper::updateDisplay() {
       if (board_[r][c].isRevealed) {
         if (board_[r][c].isBomb) {
 
-          board_[r][c].display = "X";
+          board_[r][c].display = bombDisplay_;
           board_[r][c].bombsBordering = 0;
         }
         else if (board_[r][c].bombsBordering != 0)
-          board_[r][c].display = std::to_string(board_[r][c].bombsBordering);
+          board_[r][c].display = '0' + board_[r][c].bombsBordering;
         else if (board_[r][c].bombsBordering == 0)
-          board_[r][c].display = " ";
+          board_[r][c].display = ' ';
       }
+      else if (board_[r][c].markedBomb) board_[r][c].display = bombDisplay_;
+      else if (board_[r][c].markedUnsure) board_[r][c].display = unsureDisplay_;
+      else board_[r][c].display = hiddenDisplay_;
     }
   }
 }
