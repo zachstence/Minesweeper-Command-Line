@@ -48,7 +48,7 @@ public:
 
 // to be used for a minesweeper solver that will inherit from this class
 protected:
-  void setup();
+  void setup(Settings);
   void reveal(int, int);
   void markBomb(int, int);
   void markUnsure(int, int);
@@ -69,6 +69,7 @@ private:
   char markUnsureDisplay_ = '?';
   char bombDisplay_ = 'X';
 
+  void setup();
   void loop();
   void randomBombs();
   void calculateBombsBordering();

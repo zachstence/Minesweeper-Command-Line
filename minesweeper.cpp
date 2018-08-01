@@ -193,6 +193,12 @@ void Minesweeper::setup() {
     }
   } while (!success);
 
+  setup(s_);
+}
+
+void Minesweeper::setup(Settings s) {
+  s_ = s;
+
   // resize board_ to have rows_ rows and cols_ cols
   board_.resize(s_.rows);
   for (auto &r : board_) r.resize(s_.cols);
@@ -200,6 +206,7 @@ void Minesweeper::setup() {
   // setup the board - randomly place bombs, calculating bombs adjacent to cells
   randomBombs();
   calculateBombsBordering();
+
 }
 
 /**
