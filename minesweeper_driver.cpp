@@ -1,4 +1,4 @@
-#include "minesweeper_oo.h"
+#include "minesweeper.h"
 
 void display2D(vector<vector<char>> b) {
   for (auto &r : b) {
@@ -11,8 +11,5 @@ void display2D(vector<vector<char>> b) {
 
 int main() {
   Minesweeper m;
-  m.setHiddenDisplay('a');
-  m.setBombDisplay('b');
-  m.setUnsureDisplay('u');
   m.play();
 }
